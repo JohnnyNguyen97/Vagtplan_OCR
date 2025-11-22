@@ -7,7 +7,7 @@ pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tessera
 
 
 
-IMAGE_PATH = r"C:\Users\Johnny\Desktop\Vagtplan_OCR\Vagter\45.png"  #Path til screenshot af vagtplan
+IMAGE_PATH = r"C:\Users\Johnny\Desktop\Vagter\45.png"  #Path til screenshot af vagtplan
 
 def extract_text(path):
     img = Image.open(path)
@@ -26,7 +26,8 @@ def parse_shifts(text):
 
     # Matcher tider og pause
     time_pattern = r"(\d{1,2}:\d{2})\s*[-–]\s*(\d{1,2}:\d{2})(?:\s*\(?([0-9]{1,3})\)?)?"
-
+    
+    # Eksempel: "08:00 - 16:00 (30)"
     shifts = []
 
     # Find alle dage og tider med positionsdata
