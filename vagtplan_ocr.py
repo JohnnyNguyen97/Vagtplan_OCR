@@ -8,7 +8,7 @@ pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tessera
 # Hvis Tesseract ligger et andet sted på Windows, sæt path her:
 # pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
-IMAGE_PATH = r"C:\Users\Johnny\Desktop\Vagtplan_OCR\Vagter\50.png"  # ← skift stien til dit eget billede
+IMAGE_PATH = r"C:\Users\Johnny\Desktop\Vagtplan_OCR\Vagter\45.png"  # ← skift stien til dit eget billede
 
 def extract_text(path):
     img = Image.open(path)
@@ -17,45 +17,64 @@ def extract_text(path):
     return text
 
 def parse_shifts(text):
+    import re
+
     # Rens OCR-tekst for mærkelige tegn
     text = text.replace("‘", "").replace("’", "").replace("`", "")
 
-    # Matcher dage med eventuel dagnummer
+    # Matcher dage med evt. dagnummer (DK + EN)
     day_pattern = r"(?i)\b(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|Man|Tir|Ons|Tor|Fre|L[oø]r|S[oø]n|Mandag|Tirsdag|Onsdag|Torsdag|Fredag|L[øo]rdag|S[øo]ndag)\b\s*(\d{1,2})?"
-    # Matcher tider
+
+    # Matcher tider (inkl. pause)
     time_pattern = r"(\d{1,2}:\d{2})\s*[-–]\s*(\d{1,2}:\d{2})(?:\s*\(?([0-9]{1,3})\)?)?"
 
     shifts = []
-    current_day = None
 
-    # Find alle dage først
+    # Find alle dage og tider med positionsdata
     day_matches = list(re.finditer(day_pattern, text))
     time_matches = list(re.finditer(time_pattern, text))
 
-    day_idx = 0
-    for time_match in time_matches:
-        # Tildel den nærmeste dag før tiden
-        while day_idx + 1 < len(day_matches) and day_matches[day_idx + 1].start() < time_match.start():
-            day_idx += 1
-        day_match = day_matches[day_idx]
+    # Udvid dag_matches med .start() så vi kan relatere vagter til dagslinjer
+    day_positions = [
+        {
+            "weekday": d.group(1),
+            "day": int(d.group(2)) if d.group(2) else None,
+            "pos": d.start()
+        }
+        for d in day_matches
+    ]
 
-        weekday = day_match.group(1)
-        day_num = int(day_match.group(2)) if day_match.group(2) else None
+    # Nu finder vi den dag, der står nærmest OVER hver tid i teksten
+    for t in time_matches:
+        t_pos = t.start()
 
-        start = time_match.group(1)
-        end = time_match.group(2)
-        pause_group = time_match.group(3)
-        pause = int(pause_group) if pause_group and pause_group.isdigit() else 0
+        # Find dag hvor dag.pos < t.pos, og som er nærmest
+        used_day = None
+        for d in day_positions:
+            if d["pos"] < t_pos:
+                used_day = d
+            else:
+                break
+
+        # Hvis vi af en eller anden grund ikke finder dag så skip denne vagt
+        if not used_day:
+            continue
+
+        start = t.group(1)
+        end = t.group(2)
+        pause = int(t.group(3)) if (t.group(3) and t.group(3).isdigit()) else 0
 
         shifts.append({
-            "weekday": weekday,
-            "day": day_num,
+            "weekday": used_day["weekday"],
+            "day": used_day["day"],
             "start": start,
             "end": end,
             "pause_min": pause
         })
 
     return shifts
+
+
 
 
 def calculate_hours(shifts):
@@ -74,7 +93,7 @@ def calculate_hours(shifts):
     return total
 
 def main():
-    print("🔍 Læser billede...")
+    print("Læser billede...")
     text = extract_text(IMAGE_PATH)
 
     print("\n📄 OCR indhold:")
@@ -86,16 +105,15 @@ def main():
     # Beregn timer før vi forsøger at udskrive dem
     total = calculate_hours(shifts)
 
-    print("\n📅 Udtræk af vagter:")
+    print("Udtræk af vagter:")
     if not shifts:
         print("Ingen vagter fundet i OCR-teksten. Prøv 'lang' parameter eller tjek billedet.")
     for s in shifts:
         print(
-            f"{s['weekday']} {s['day']}: "
-            f"{s['start']} - {s['end']} (pause {s['pause_min']} min) → {s['hours']} timer"
+            f"\n {s['start']} - {s['end']} (pause {s['pause_min']} min) → {s['hours']} timer"
         )
 
-    print("\n⏱️ Total arbejdstid i perioden:", total, "timer")
+    print("\n Total arbejdstid i perioden:", total, "timer\n")
 
 if __name__ == "__main__":
     main()
