@@ -5,14 +5,13 @@ import pytesseract
 
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
-# Hvis Tesseract ligger et andet sted på Windows, sæt path her:
-# pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
-IMAGE_PATH = r"C:\Users\Johnny\Desktop\Vagtplan_OCR\Vagter\45.png"  # ← skift stien til dit eget billede
+
+IMAGE_PATH = r"C:\Users\Johnny\Desktop\Vagtplan_OCR\Vagter\45.png"  #Path til screenshot af vagtplan
 
 def extract_text(path):
     img = Image.open(path)
-    # Prøv både dansk og engelsk træningsdata for bedre OCR på danske planer
+    
     text = pytesseract.image_to_string(img, lang="dan+eng")
     return text
 
@@ -22,10 +21,10 @@ def parse_shifts(text):
     # Rens OCR-tekst for mærkelige tegn
     text = text.replace("‘", "").replace("’", "").replace("`", "")
 
-    # Matcher dage med evt. dagnummer (DK + EN)
+    # Matcher dage 
     day_pattern = r"(?i)\b(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|Man|Tir|Ons|Tor|Fre|L[oø]r|S[oø]n|Mandag|Tirsdag|Onsdag|Torsdag|Fredag|L[øo]rdag|S[øo]ndag)\b\s*(\d{1,2})?"
 
-    # Matcher tider (inkl. pause)
+    # Matcher tider og pause
     time_pattern = r"(\d{1,2}:\d{2})\s*[-–]\s*(\d{1,2}:\d{2})(?:\s*\(?([0-9]{1,3})\)?)?"
 
     shifts = []
@@ -44,7 +43,7 @@ def parse_shifts(text):
         for d in day_matches
     ]
 
-    # Nu finder vi den dag, der står nærmest OVER hver tid i teksten
+    # Finder vagter og relaterer til dage
     for t in time_matches:
         t_pos = t.start()
 
@@ -81,7 +80,7 @@ def calculate_hours(shifts):
     for s in shifts:
         start = datetime.strptime(s["start"], "%H:%M")
         end = datetime.strptime(s["end"], "%H:%M")
-        # Hvis slut er tidligere end start, antag overnatning og læg en dag til
+        # Hvis slut er tidligere end start og læg en dag til
         if end <= start:
             end = end + timedelta(days=1)
 
@@ -96,7 +95,7 @@ def main():
     print("Læser billede...")
     text = extract_text(IMAGE_PATH)
 
-    print("\n📄 OCR indhold:")
+    print("\n OCR indhold:")
     print("--------------------------------")
     print(text)
     print("--------------------------------")
