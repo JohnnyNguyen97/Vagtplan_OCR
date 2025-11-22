@@ -8,7 +8,7 @@ pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tessera
 # Hvis Tesseract ligger et andet sted på Windows, sæt path her:
 # pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
-IMAGE_PATH = r"C:\Users\Johnny\Desktop\Vagter\50.png"  # ← skift stien til dit eget billede
+IMAGE_PATH = r"C:\Users\Johnny\Desktop\Vagtplan_OCR\Vagter\50.png"  # ← skift stien til dit eget billede
 
 def extract_text(path):
     img = Image.open(path)
