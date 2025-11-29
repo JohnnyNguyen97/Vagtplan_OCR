@@ -7,7 +7,7 @@ pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tessera
 
 
 
-IMAGE_PATH = r"C:\Users\Johnny\Desktop\Vagter\45.png"  #Path til screenshot af vagtplan
+IMAGE_PATH = r"C:\Users\Johnny\Desktop\Vagter\48.png"  #Path til screenshot af vagtplan
 
 def extract_text(path):
     img = Image.open(path)
