@@ -30,7 +30,11 @@ def main():
             f"\n {s['start']} - {s['end']} (pause {s['pause_min']} min) → {s['hours']} timer"
         )
 
-    print("\n Total arbejdstid i perioden:", total, "timer\n")
+    print("\n Total arbejdstid i perioden:", total, "timer")
+    
+    # Beregn løn for ugen
+    weekly_wage = calculate_salary(shifts, config.HOURLY_WAGE)
+    print(f" Total løn for ugen: {weekly_wage:,.2f} kr\n")
 
 if __name__ == "__main__":
     main()
