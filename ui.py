@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 from shift_parser import parse_shifts
 from hour_calc import calculate_hours
-from salary import calculate_salary
+from salary import calculate_salary_detailed
 from ocr_reader import extract_text
 import config
 
@@ -14,8 +14,8 @@ def get_data(image_path):
         text = ""
     shifts = parse_shifts(text)
     total = calculate_hours(shifts)
-    wage = calculate_salary(shifts, config.HOURLY_WAGE)
-    return shifts, total, wage
+    salary_data = calculate_salary_detailed(shifts, config.HOURLY_WAGE)
+    return shifts, salary_data
 
 
 class ShiftApp(tk.Tk):
@@ -53,11 +53,13 @@ class ShiftApp(tk.Tk):
         bottom = ttk.Frame(self)
         bottom.pack(fill='x', padx=8, pady=(0,8))
 
-        self.total_label = ttk.Label(bottom, text="Total timer: —")
-        self.total_label.pack(side='left', padx=(0,12))
+        # Create a frame for salary details
+        salary_frame = ttk.LabelFrame(bottom, text="Løn detaljer", padding=5)
+        salary_frame.pack(fill='x', pady=(0, 8))
 
-        self.wage_label = ttk.Label(bottom, text="Total løn: —")
-        self.wage_label.pack(side='left')
+        self.details_text = tk.Text(salary_frame, height=8, width=60, font=('Courier', 9))
+        self.details_text.pack(fill='x')
+        self.details_text.config(state='disabled')
 
         btn_frame = ttk.Frame(bottom)
         btn_frame.pack(side='right')
@@ -85,10 +87,13 @@ class ShiftApp(tk.Tk):
 
     def update(self):
         try:
-            shifts, total, wage = get_data(self.image_path)
+            shifts, salary_data = get_data(self.image_path)
         except Exception as e:
             messagebox.showerror("Fejl", f"Kunne ikke hente data: {e}")
-            shifts, total, wage = [], 0, 0
+            shifts, salary_data = [], {
+                "total_hours": 0, "gross_pay": 0, "am_bidrag": 0, 
+                "a_skat": 0, "atp": 0, "forsikring": 0, "total_taxes": 0, "net_pay": 0
+            }
 
         for i in self.tree.get_children():
             self.tree.delete(i)
@@ -96,8 +101,28 @@ class ShiftApp(tk.Tk):
         for s in shifts:
             self.tree.insert('', 'end', values=(s.get('weekday',''), s.get('start',''), s.get('end',''), s.get('pause_min',0), f"{s.get('hours',0):.2f}"))
 
-        self.total_label.config(text=f"Total timer: {total:.2f} timer")
-        self.wage_label.config(text=f"Total løn: {wage:,.2f} kr")
+        # Display salary details
+        details = f"""
+Timer og løn oversigt:
+─────────────────────────────────────
+Arbejdstimer:             {salary_data['total_hours']:>6.2f} timer
+
+Bruttoløn:                {salary_data['gross_pay']:>10.2f} kr
+─────────────────────────────────────
+Skatter og bidrag:
+  AM-bidrag (8%):         {salary_data['am_bidrag']:>10.2f} kr
+  A-skat (39%):            {salary_data['a_skat']:>10.2f} kr
+  ATP-pension:            {salary_data['atp']:>10.2f} kr
+  Forsikring:             {salary_data['forsikring']:>10.2f} kr
+─────────────────────────────────────
+I alt skat og bidrag:     {salary_data['total_taxes']:>10.2f} kr
+═════════════════════════════════════
+UDBETALING:               {salary_data['net_pay']:>10.2f} kr
+"""
+        self.details_text.config(state='normal')
+        self.details_text.delete('1.0', tk.END)
+        self.details_text.insert('1.0', details)
+        self.details_text.config(state='disabled')
 
 
     def open_main(self):
