@@ -29,32 +29,21 @@ def parse_shifts(text):
         for d in day_matches
     ]
 
-    # Finder vagter og relaterer til dage
-    for t in time_matches:
-        t_pos = t.start()
-
-        # Find dag hvor dag.pos < t.pos, og som er nærmest
-        used_day = None
-        for d in day_positions:
-            if d["pos"] < t_pos:
-                used_day = d
-            else:
-                break
-
-        # Hvis vi af en eller anden grund ikke finder dag så skip denne vagt
-        if not used_day:
-            continue
-
+    # Finder vagter og relaterer til dage - matcher i-th time med i-th day (by order, not position)
+    for i, t in enumerate(time_matches):
         start = t.group(1)
         end = t.group(2)
         pause = int(t.group(3)) if (t.group(3) and t.group(3).isdigit()) else 0
 
-        shifts.append({
-            "weekday": used_day["weekday"],
-            "day": used_day["day"],
-            "start": start,
-            "end": end,
-            "pause_min": pause
-        })
+        # Match shift i med dag i (siden shifts er i samme rækkefølge som dage)
+        if i < len(day_positions):
+            used_day = day_positions[i]
+            shifts.append({
+                "weekday": used_day["weekday"],
+                "day": used_day["day"],
+                "start": start,
+                "end": end,
+                "pause_min": pause
+            })
 
     return shifts

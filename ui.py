@@ -1,17 +1,15 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, filedialog
 from shift_parser import parse_shifts
 from hour_calc import calculate_hours
 from salary import calculate_salary
 from ocr_reader import extract_text
 import config
 
-IMAGE_PATH = r"C:\Users\Johnny\Desktop\Vagter\48.png"
 
-
-def get_data():
+def get_data(image_path):
     try:
-        text = extract_text(IMAGE_PATH, config.TESSERACT_PATH)
+        text = extract_text(image_path, config.TESSERACT_PATH)
     except Exception:
         text = ""
     shifts = parse_shifts(text)
@@ -24,7 +22,20 @@ class ShiftApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Vagtoversigt")
-        self.geometry("650x350")
+        self.geometry("700x400")
+        
+        self.image_path = r"C:\Users\Johnny\Desktop\Vagter\48.png"  # Default path
+
+        # Top frame for file selection
+        top_frame = ttk.Frame(self)
+        top_frame.pack(fill='x', padx=8, pady=8)
+
+        ttk.Label(top_frame, text="Billede:").pack(side='left', padx=(0, 5))
+        self.path_label = ttk.Label(top_frame, text=self.image_path, foreground='blue')
+        self.path_label.pack(side='left', fill='x', expand=True, padx=(0, 5))
+
+        browse_btn = ttk.Button(top_frame, text="Vælg billede", command=self.browse_file)
+        browse_btn.pack(side='left', padx=4)
 
         self.tree = ttk.Treeview(self, columns=("day", "start", "end", "pause", "hours"), show='headings')
         self.tree.heading('day', text='Dag')
@@ -62,9 +73,19 @@ class ShiftApp(tk.Tk):
 
         self.update()
 
+    def browse_file(self):
+        file_path = filedialog.askopenfilename(
+            title="Vælg vagtplan screenshot",
+            filetypes=[("PNG billeder", "*.png"), ("JPEG billeder", "*.jpg *.jpeg"), ("Alle filer", "*.*")]
+        )
+        if file_path:
+            self.image_path = file_path
+            self.path_label.config(text=file_path)
+            self.update()
+
     def update(self):
         try:
-            shifts, total, wage = get_data()
+            shifts, total, wage = get_data(self.image_path)
         except Exception as e:
             messagebox.showerror("Fejl", f"Kunne ikke hente data: {e}")
             shifts, total, wage = [], 0, 0
@@ -77,6 +98,7 @@ class ShiftApp(tk.Tk):
 
         self.total_label.config(text=f"Total timer: {total:.2f} timer")
         self.wage_label.config(text=f"Total løn: {wage:,.2f} kr")
+
 
     def open_main(self):
         import subprocess
