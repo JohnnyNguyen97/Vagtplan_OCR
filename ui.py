@@ -4,6 +4,7 @@ from shift_parser import parse_shifts
 from hour_calc import calculate_hours
 from salary import calculate_salary_detailed
 from ocr_reader import extract_text
+from data_storage import save_shifts
 import config
 
 
@@ -25,6 +26,8 @@ class ShiftApp(tk.Tk):
         self.geometry("700x400")
         
         self.image_path = r"C:\Users\Johnny\Desktop\Vagter\48.png"  # Default path
+        self.current_shifts = []
+        self.current_salary_data = {}
 
         # Top frame for file selection
         top_frame = ttk.Frame(self)
@@ -67,6 +70,9 @@ class ShiftApp(tk.Tk):
         refresh_btn = ttk.Button(btn_frame, text="Opdater", command=self.update)
         refresh_btn.pack(side='left', padx=4)
 
+        save_btn = ttk.Button(btn_frame, text="Gem til Historie", command=self.save_to_history)
+        save_btn.pack(side='left', padx=4)
+
         open_main_btn = ttk.Button(btn_frame, text="Åbn i Terminal", command=self.open_main)
         open_main_btn.pack(side='left', padx=4)
 
@@ -94,6 +100,10 @@ class ShiftApp(tk.Tk):
                 "total_hours": 0, "gross_pay": 0, "am_bidrag": 0, 
                 "a_skat": 0, "atp": 0, "forsikring": 0, "total_taxes": 0, "net_pay": 0
             }
+
+        # Store current data
+        self.current_shifts = shifts
+        self.current_salary_data = salary_data
 
         for i in self.tree.get_children():
             self.tree.delete(i)
@@ -124,6 +134,17 @@ UDBETALING:               {salary_data['net_pay']:>10.2f} kr
         self.details_text.insert('1.0', details)
         self.details_text.config(state='disabled')
 
+
+    def save_to_history(self):
+        if not self.current_shifts:
+            messagebox.showwarning("Advarsel", "Ingen vagter at gemme. Opdater først med et billede.")
+            return
+        
+        try:
+            entry_count = save_shifts(self.current_shifts, self.current_salary_data)
+            messagebox.showinfo("Succes", f"Vagter gemt til historie! (Total indlæg: {entry_count})")
+        except Exception as e:
+            messagebox.showerror("Fejl", f"Kunne ikke gemme til historie: {e}")
 
     def open_main(self):
         import subprocess
