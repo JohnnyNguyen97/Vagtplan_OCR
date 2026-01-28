@@ -1,0 +1,59 @@
+[
+  {
+    "date_saved": "2026-01-28T23:19:09.119811",
+    "shifts": [
+      {
+        "weekday": "Monday",
+        "day": null,
+        "start": "06:30",
+        "end": "16:00",
+        "pause_min": 30,
+        "hours": 9.0
+      },
+      {
+        "weekday": "Tuesday",
+        "day": 25,
+        "start": "08:00",
+        "end": "16:00",
+        "pause_min": 30,
+        "hours": 7.5
+      },
+      {
+        "weekday": "Wednesday",
+        "day": 26,
+        "start": "06:30",
+        "end": "16:00",
+        "pause_min": 30,
+        "hours": 9.0
+      },
+      {
+        "weekday": "Thursday",
+        "day": 27,
+        "start": "08:00",
+        "end": "16:00",
+        "pause_min": 30,
+        "hours": 7.5
+      },
+      {
+        "weekday": "Friday",
+        "day": 28,
+        "start": "06:30",
+        "end": "14:00",
+        "pause_min": 30,
+        "hours": 7.0
+      }
+    ],
+    "salary_data": {
+      "total_hours": 40.0,
+      "weekend_hours": 0,
+      "weekday_hours": 40.0,
+      "gross_pay": 5640.0,
+      "am_bidrag": 451.2,
+      "a_skat": 2199.6,
+      "atp": 627.2,
+      "forsikring": 0.0,
+      "total_taxes": 3278.0,
+      "net_pay": 2362.0
+    }
+  }
+]

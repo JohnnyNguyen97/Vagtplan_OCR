@@ -4,13 +4,13 @@ from hour_calc import calculate_hours
 from salary import calculate_salary
 import config
 
-IMAGE_PATH = r"C:\Users\Johnny\Desktop\Vagter\48.png"  #Path til screenshot af vagtplan
+
 
 
 
 def main():
     print("Læser billede...")
-    text = extract_text(IMAGE_PATH, config.TESSERACT_PATH)
+    text = extract_text(config.TESSERACT_PATH)
 
 
     print("\n OCR indhold:")
